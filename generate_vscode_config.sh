@@ -159,7 +159,7 @@ function generate_settings_json {
     mkdir -p "$(dirname "$settingsJsonPath")"
 
     echo "{" > "$settingsJsonPath"
-    echo '    "dotnet-test-explorer.testProjectPath": "**/*Test.csproj"' >> "$settingsJsonPath"
+    echo '    "dotnet-test-explorer.testProjectPath": "**/*Test.csproj",' >> "$settingsJsonPath"
     echo '    "editor.formatOnSave": true,' >> "$settingsJsonPath"
     echo '    "editor.renderWhitespace": "all",' >> "$settingsJsonPath"
     echo '    "editor.tabSize": 4,' >> "$settingsJsonPath"
