@@ -3,11 +3,11 @@
 on:
   push:
     branches:
-#      - main # main push는 주로 config 수정이므로 제외
       - 'feature/*'
-  pull_request:
-    branches:
-      - main
+  #   - main # main push는 주로 config 수정이므로 제외
+  # pull_request:굳이 branches에 한번 PR에서 한번 할 필요가 없어보여서 제외함.
+  #   branches:
+  #     - main
 
 jobs:
   build:
