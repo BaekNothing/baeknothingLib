@@ -3,7 +3,7 @@
 on:
   push:
     branches:
-      - main
+#      - main # main push는 주로 config 수정이므로 제외
       - 'feature/*'
   pull_request:
     branches:
