@@ -24,25 +24,6 @@ public class Tests
     }
 
     [Test]
-    public void TestDoubleToIntAndBack_BetweenZeroAndOne()
-    {
-        // 0과 1 사이의 double 값으로 테스트
-        double[] testValues = { 0.123456789, 0.000000001, 0.999999999 };
-
-        foreach (var originalValue in testValues)
-        {
-            uint encodedValue = Converter.DoubleToInt(originalValue);
-            double decodedValue = Converter.IntToDouble(encodedValue);
-
-            Console.WriteLine($"Original: {originalValue}, Encoded: {encodedValue}, Decoded: {decodedValue}");
-
-            Assert.That(encodedValue, Is.EqualTo(1000000000), "Encoded value should be 1000000000");
-            Assert.That(decodedValue, Is.EqualTo(0), "Decoded value should be 0");
-        }
-    }
-
-
-    [Test]
     public void TestDoubleToIntAndBack_Random()
     {
         // 랜덤한 double 값으로 테스트
@@ -65,6 +46,18 @@ public class Tests
         // 음수 값 테스트
         Assert.Throws<ArgumentException>(() => Converter.DoubleToInt(-123.456));
     }
+
+
+    [Test]
+    public void TestInvalidDoubleToInt_BelowOne()
+    {
+        // 0과 1 사이의 double 값으로 테스트
+        double[] testValues = { 0.123456789, 0.000000001, 0.999999999 };
+
+        foreach (var originalValue in testValues)
+            Assert.Throws<ArgumentException>(() => Converter.DoubleToInt(originalValue));
+    }
+
 
     [Test]
     public void TestInvalidIntToDouble()
