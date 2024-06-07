@@ -3,7 +3,7 @@
 workspaceFolder=$(pwd)
 
 function get_project_paths {
-    find "$1" -type d -exec find {} -maxdepth 1 -name "*.csproj" \;
+    find "$1" -type f -name "*.csproj"
 }
 
 function generate_launch_json {
@@ -58,12 +58,13 @@ function generate_tasks_json {
     echo '    "version": "2.0.0",' >> "$tasksJsonPath"
     echo '    "tasks": [' >> "$tasksJsonPath"
 
+    # Individual project build tasks
     for project in "${projects[@]}"; do
         projectName=$(basename "${project%.*}")
         projectPath="\${workspaceFolder}/${project#$workspaceFolder/}"
 
         echo '        {' >> "$tasksJsonPath"
-        echo '            "label": "build '$projectName'",' >> "$tasksJsonPath"
+        echo '            "label": "build '${projectName}'",' >> "$tasksJsonPath"
         echo '            "command": "dotnet",' >> "$tasksJsonPath"
         echo '            "type": "process",' >> "$tasksJsonPath"
         echo '            "args": [' >> "$tasksJsonPath"
@@ -74,8 +75,69 @@ function generate_tasks_json {
         echo '        },' >> "$tasksJsonPath"
     done
 
-    # Remove the last comma
+    # "build all" task
+    echo '        {' >> "$tasksJsonPath"
+    echo '            "label": "build all",' >> "$tasksJsonPath"
+    echo '            "command": "dotnet",' >> "$tasksJsonPath"
+    echo '            "type": "process",' >> "$tasksJsonPath"
+    echo '            "args": [' >> "$tasksJsonPath"
+    echo '                "build"' >> "$tasksJsonPath"
+    echo '            ],' >> "$tasksJsonPath"
+    echo '            "dependsOrder": "sequence",' >> "$tasksJsonPath"
+    echo '            "dependsOn": [' >> "$tasksJsonPath"
+
+    for project in "${projects[@]}"; do
+        projectName=$(basename "${project%.*}")
+        echo '                "build '${projectName}'",' >> "$tasksJsonPath"
+    done
+
+    # Remove the last comma from the "dependsOn" list
     sed -i '$ s/,$//' "$tasksJsonPath"
+
+    echo '            ]' >> "$tasksJsonPath"
+    echo '        },' >> "$tasksJsonPath"
+
+    # "build release all" task
+    echo '        {' >> "$tasksJsonPath"
+    echo '            "label": "build release all",' >> "$tasksJsonPath"
+    echo '            "command": "dotnet",' >> "$tasksJsonPath"
+    echo '            "type": "process",' >> "$tasksJsonPath"
+    echo '            "args": [' >> "$tasksJsonPath"
+    echo '                "build",' >> "$tasksJsonPath"
+    echo '                "--configuration", "Release"' >> "$tasksJsonPath"
+    echo '            ],' >> "$tasksJsonPath"
+    echo '            "dependsOrder": "sequence",' >> "$tasksJsonPath"
+    echo '            "dependsOn": [' >> "$tasksJsonPath"
+
+    for project in "${projects[@]}"; do
+        projectName=$(basename "${project%.*}")
+        echo '                "build '${projectName}'",' >> "$tasksJsonPath"
+    done
+
+    # Remove the last comma from the "dependsOn" list
+    sed -i '$ s/,$//' "$tasksJsonPath"
+
+    echo '            ]' >> "$tasksJsonPath"
+    echo '        },' >> "$tasksJsonPath"
+
+    # "compile open files" task
+    echo '        {' >> "$tasksJsonPath"
+    echo '            "label": "compile open files",' >> "$tasksJsonPath"
+    echo '            "command": "dotnet",' >> "$tasksJsonPath"
+    echo '            "type": "shell",' >> "$tasksJsonPath"
+    echo '            "args": [' >> "$tasksJsonPath"
+    echo '                "build"' >> "$tasksJsonPath"
+    echo '            ],' >> "$tasksJsonPath"
+    echo '            "presentation": {' >> "$tasksJsonPath"
+    echo '                "reveal": "always",' >> "$tasksJsonPath"
+    echo '                "panel": "dedicated"' >> "$tasksJsonPath"
+    echo '            },' >> "$tasksJsonPath"
+    echo '            "group": {' >> "$tasksJsonPath"
+    echo '                "kind": "build",' >> "$tasksJsonPath"
+    echo '                "isDefault": true' >> "$tasksJsonPath"
+    echo '            },' >> "$tasksJsonPath"
+    echo '            "problemMatcher": "$msCompile"' >> "$tasksJsonPath"
+    echo '        }' >> "$tasksJsonPath"
 
     echo '    ]' >> "$tasksJsonPath"
     echo '}' >> "$tasksJsonPath"
@@ -89,7 +151,7 @@ function generate_settings_json {
 
     for project in "${projects[@]}"; do
         if [[ $project == *".Test.csproj" ]]; then
-            testProjectPaths+=("\${workspaceFolder}/${project#$workspaceFolder/}")
+            testProjectPaths+=("${project#$workspaceFolder/}")
         fi
     done
 
@@ -97,7 +159,7 @@ function generate_settings_json {
     mkdir -p "$(dirname "$settingsJsonPath")"
 
     echo "{" > "$settingsJsonPath"
-    echo '    "dotnet-test-explorer.testProjectPath": "'$(IFS=','; echo "${testProjectPaths[*]}")'",' >> "$settingsJsonPath"
+    echo '    "dotnet-test-explorer.testProjectPath": "**/*Test.csproj"' >> "$settingsJsonPath"
     echo '    "editor.formatOnSave": true,' >> "$settingsJsonPath"
     echo '    "editor.renderWhitespace": "all",' >> "$settingsJsonPath"
     echo '    "editor.tabSize": 4,' >> "$settingsJsonPath"
@@ -115,3 +177,6 @@ generate_tasks_json "$workspaceFolder" "${projects[@]}"
 generate_settings_json "$workspaceFolder" "${projects[@]}"
 
 echo "launch.json, tasks.json, and settings.json have been generated successfully."
+
+# wait for user input
+read -p "Press [Enter] key to continue..."
