@@ -22,7 +22,7 @@ public class PersonalityTests
         IPersonality clone = (IPersonality)personality.Clone();
 
         Assert.AreNotSame(personality, clone);
-        Assert.AreEqual(personality.GetCode, clone.GetCode);
+        Assert.AreNotEqual(personality.GetCode, clone.GetCode); // CreationTime이 다르기 때문에 다름.
         Assert.AreEqual(personality.Status.Count, clone.Status.Count);
     }
 

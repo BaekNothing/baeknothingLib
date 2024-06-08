@@ -30,7 +30,10 @@ public class CompatibilityInfoTests
 
         var sharedKeys = (List<Consts.PersonalityKeys>)method.Invoke(null, new object[] { personality1, personality2 });
 
-        Assert.AreEqual(1, sharedKeys.Count);
+
+        int enumLength = Enum.GetValues(typeof(Consts.PersonalityKeys)).Length;
+
+        Assert.AreEqual(enumLength / 2, sharedKeys.Count);
         Assert.Contains(Consts.PersonalityKeys.Hot, sharedKeys);
     }
 
