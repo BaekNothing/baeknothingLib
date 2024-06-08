@@ -47,6 +47,6 @@ public static class Converter
 
         // 지수와 가수를 사용하여 원래의 double 값 복원
         double mantissa = mantissaPart / (double)(SecondDigit / 10);
-        return mantissa * Math.Pow(10, exponentPart - 1);
+        return mantissa * Math.Pow(10, exponentPart > 0 ? exponentPart - 1 : 0);
     }
 }
