@@ -4,9 +4,9 @@ public interface IPersonality : ICloneable
 {
     public static IPersonality Create() => new Personality();
 
-    public long GetCode { get; }
+    public string GetCode { get; }
     public IReadOnlyDictionary<Consts.PersonalityKeys, int> Status { get; }
-    public IReadOnlyDictionary<long, IRelationInfo> Relation { get; }
+    public IReadOnlyDictionary<string, IRelationInfo> Relation { get; }
 
     public void SetStatus(Consts.PersonalityKeys key, int value);
 
@@ -19,12 +19,12 @@ public interface IPersonality : ICloneable
 class Personality : IPersonality
 {
     readonly Dictionary<Consts.PersonalityKeys, int> _status;
-    readonly long _creationTime;
-    readonly Dictionary<long, IRelationInfo> _relation;
+    readonly string _uniqueCode;
+    readonly Dictionary<string, IRelationInfo> _relation;
 
-    public long GetCode => _creationTime;
+    public string GetCode => _uniqueCode;
     public IReadOnlyDictionary<Consts.PersonalityKeys, int> Status => _status;
-    public IReadOnlyDictionary<long, IRelationInfo> Relation => _relation;
+    public IReadOnlyDictionary<string, IRelationInfo> Relation => _relation;
 
     public void SetStatus(Consts.PersonalityKeys key, int value) => _status[key] = value;
     public void Connect(IPersonality personality)
@@ -56,26 +56,15 @@ class Personality : IPersonality
         return clone;
     }
 
-    static readonly Mutex _mutex = new();
     public Personality()
     {
-        try
-        {
-            _mutex.WaitOne();
-            _relation = [];
-            _status = [];
-            _creationTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            // 기기의 LocalTime을 바꾸는 것에 취약함 = 개선 필요.
+        _uniqueCode = Guid.NewGuid().ToString();
+        _relation = [];
+        _status = [];
 
-            foreach (Consts.PersonalityKeys key in Enum.GetValues(typeof(Consts.PersonalityKeys)))
-            {
-                _status[key] = 0;
-            }
-        }
-        finally
-        {
-            _mutex.ReleaseMutex();
-        }
+        foreach (Consts.PersonalityKeys key in Enum.GetValues(typeof(Consts.PersonalityKeys)))
+            _status[key] = 0;
+
     }
 
     public void FromMap(Dictionary<object, object> map)
