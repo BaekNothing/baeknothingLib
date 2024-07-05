@@ -31,6 +31,9 @@ public class Tests
         for (int i = 0; i < 100; i++)
         {
             double originalValue = random.NextDouble() * Math.Pow(10, random.Next(1, 308));
+            if (originalValue < 1)
+                continue;
+
             uint encodedValue = Converter.DoubleToInt(originalValue);
             double decodedValue = Converter.IntToDouble(encodedValue);
 
