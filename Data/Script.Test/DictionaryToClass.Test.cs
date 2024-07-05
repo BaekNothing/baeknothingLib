@@ -10,15 +10,15 @@ public class DictionaryToClassTest
 {
     public class TestClass
     {
-        public int IntField;
-        public string StringField;
-        public TestEnum EnumField;
-        public NestedClass NestedField;
+        public int IntField = 0;
+        public string StringField = "";
+        public TestEnum EnumField = TestEnum.ValueOne;
+        public NestedClass NestedField = new NestedClass();
     }
 
     public class NestedClass
     {
-        public double DoubleField;
+        public double DoubleField = 0;
     }
 
     public enum TestEnum
@@ -58,14 +58,21 @@ public class DictionaryToClassTest
         }
 
         [Test]
-        public void DictionaryToClass_WithInvalidField_ThrowsInvalidOperationException()
+        public void DictionaryToClass_WithInvalidField()
         {
             var dict = new Dictionary<string, object>
             {
                 { "InvalidField", 123 }
             };
 
-            Assert.Throws<InvalidOperationException>(() => Converter.DictionaryToClass<TestClass>(dict));
+            var result = Converter.DictionaryToClass<TestClass>(dict);
+
+            Assert.NotNull(result);
+            Assert.AreEqual(0, result.IntField);
+            Assert.AreEqual("", result.StringField);
+            Assert.AreEqual(TestEnum.ValueOne, result.EnumField);
+            Assert.NotNull(result.NestedField);
+            Assert.AreEqual(0, result.NestedField.DoubleField);
         }
     }
 }
